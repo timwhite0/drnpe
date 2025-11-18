@@ -1,1 +1,5 @@
 .venv
+outputs
+logs
+**/__pycache__
+*.out
