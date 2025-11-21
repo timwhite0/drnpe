@@ -19,13 +19,45 @@ datamodule:
   train_split: 0.8
   val_split: 0.1
 
+# primal, DRNPE
 encoder:
   _target_: encoder.Encoder
-  kl_ball_threshold: 2.0
-  initial_lambda: 1.0
+  objective: "primal"
+  kl_ball_threshold: 0.0  # irrelevant if objective is "primal"
+  initial_lambda: 0.1
   x_dim: ${datamodule.num_observations}
   num_hidden_channels: 64
   lr: 1e-4
+
+# primal, standard NPE
+# encoder:
+#   _target_: encoder.Encoder
+#   objective: "primal"
+#   kl_ball_threshold: 0.0  # irrelevant if objective is "primal"
+#   initial_lambda: 1000000.0
+#   x_dim: ${datamodule.num_observations}
+#   num_hidden_channels: 64
+#   lr: 1e-4
+
+# dual, DRNPE
+# encoder:
+#   _target_: encoder.Encoder
+#   objective: "dual"
+#   kl_ball_threshold: 2.0
+#   initial_lambda: 1.0
+#   x_dim: ${datamodule.num_observations}
+#   num_hidden_channels: 64
+#   lr: 1e-4
+
+# dual, standard NPE
+# encoder:
+#   _target_: encoder.Encoder
+#   objective: "dual"
+#   kl_ball_threshold: 0.0
+#   initial_lambda: 1.0
+#   x_dim: ${datamodule.num_observations}
+#   num_hidden_channels: 64
+#   lr: 1e-4
 
 trainer:
   _target_: lightning.Trainer
@@ -35,7 +67,7 @@ trainer:
   logger:
     _target_: lightning.pytorch.loggers.TensorBoardLogger
     save_dir: logs
-    name: drnpe2
+    name: drnpe_${encoder.objective}_kl${encoder.kl_ball_threshold}_lambda${encoder.initial_lambda}
     version: ""
   callbacks:
     - _target_: lightning.pytorch.callbacks.EarlyStopping
