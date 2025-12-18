@@ -11,7 +11,7 @@ seed: 42
 
 datamodule:
   _target_: data.GaussianDataModule
-  prior_stdev: 1.0
+  prior_stdev: 5.0
   likelihood_stdev: 1.0
   num_observations: 100
   num_batches: 100
@@ -27,28 +27,28 @@ datamodule:
 #   lr: 1e-4
 
 # DRNPE, primal
-encoder:
-  _target_: encoder.EncoderDRNPE
-  objective: "drnpe primal"
-  kl_ball_threshold: 0.0  # irrelevant if objective is "drnpe primal"
-  initial_lambda: 0.1
-  x_dim: ${datamodule.num_observations}
-  z_noise_stdev: 0.1
-  x_noise_stdev: 0.1
-  num_hidden_channels: 64
-  lr: 1e-4
-
-# DRNPE, dual
 # encoder:
 #   _target_: encoder.EncoderDRNPE
-#   objective: "drnpe dual"
-#   kl_ball_threshold: 2.0
-#   initial_lambda: 1.0
+#   objective: "drnpe primal"
+#   kl_ball_threshold: 0.0  # irrelevant if objective is "drnpe primal"
+#   initial_lambda: 0.1
 #   x_dim: ${datamodule.num_observations}
 #   z_noise_stdev: 0.1
 #   x_noise_stdev: 0.1
 #   num_hidden_channels: 64
 #   lr: 1e-4
+
+# DRNPE, dual
+encoder:
+  _target_: encoder.EncoderDRNPE
+  objective: "drnpe dual"
+  kl_ball_threshold: 0.654  # KL(N(0,2) || N(0,1)) where 2 is the misspecified likelihood variance
+  initial_lambda: 1.0
+  x_dim: ${datamodule.num_observations}
+  z_noise_stdev: 0.1
+  x_noise_stdev: 0.1
+  num_hidden_channels: 64
+  lr: 1e-4
 
 trainer:
   _target_: lightning.Trainer

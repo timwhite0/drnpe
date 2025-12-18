@@ -11,9 +11,11 @@ class LocationScaleNet(nn.Module):
 
         self.net = nn.Sequential(
             nn.Linear(x_dim, num_hidden_channels),
-            nn.ReLU(),
+            nn.SiLU(),
             nn.Linear(num_hidden_channels, num_hidden_channels),
-            nn.ReLU(),
+            nn.SiLU(),
+            nn.Linear(num_hidden_channels, num_hidden_channels),
+            nn.SiLU(),
             nn.Linear(num_hidden_channels, 2),
         )
 
