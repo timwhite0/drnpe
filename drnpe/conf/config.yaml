@@ -11,53 +11,42 @@ seed: 42
 
 datamodule:
   _target_: data.GaussianDataModule
-  prior_stdev: 5.0
-  z_noise_stdev: 0.1
+  prior_stdev: 1.0
   likelihood_stdev: 1.0
-  x_noise_stdev: 0.1
   num_observations: 100
   num_batches: 100
   batch_size: 256
   train_split: 0.8
   val_split: 0.1
 
-# primal, DRNPE
+# Standard NPE
+# encoder:
+#   _target_: encoder.EncoderNPE
+#   x_dim: ${datamodule.num_observations}
+#   num_hidden_channels: 64
+#   lr: 1e-4
+
+# DRNPE, primal
 encoder:
-  _target_: encoder.Encoder
-  objective: "primal"
-  kl_ball_threshold: 0.0  # irrelevant if objective is "primal"
+  _target_: encoder.EncoderDRNPE
+  objective: "drnpe primal"
+  kl_ball_threshold: 0.0  # irrelevant if objective is "drnpe primal"
   initial_lambda: 0.1
   x_dim: ${datamodule.num_observations}
+  z_noise_stdev: 0.1
+  x_noise_stdev: 0.1
   num_hidden_channels: 64
   lr: 1e-4
 
-# primal, standard NPE
+# DRNPE, dual
 # encoder:
-#   _target_: encoder.Encoder
-#   objective: "primal"
-#   kl_ball_threshold: 0.0  # irrelevant if objective is "primal"
-#   initial_lambda: 1000000.0
-#   x_dim: ${datamodule.num_observations}
-#   num_hidden_channels: 64
-#   lr: 1e-4
-
-# dual, DRNPE
-# encoder:
-#   _target_: encoder.Encoder
-#   objective: "dual"
+#   _target_: encoder.EncoderDRNPE
+#   objective: "drnpe dual"
 #   kl_ball_threshold: 2.0
 #   initial_lambda: 1.0
 #   x_dim: ${datamodule.num_observations}
-#   num_hidden_channels: 64
-#   lr: 1e-4
-
-# dual, standard NPE
-# encoder:
-#   _target_: encoder.Encoder
-#   objective: "dual"
-#   kl_ball_threshold: 0.0
-#   initial_lambda: 1.0
-#   x_dim: ${datamodule.num_observations}
+#   z_noise_stdev: 0.1
+#   x_noise_stdev: 0.1
 #   num_hidden_channels: 64
 #   lr: 1e-4
 
@@ -69,7 +58,7 @@ trainer:
   logger:
     _target_: lightning.pytorch.loggers.TensorBoardLogger
     save_dir: logs
-    name: ${encoder.objective}_kl${encoder.kl_ball_threshold}_lambda${encoder.initial_lambda}_${now:%m-%d-%H-%M}
+    name: ${encoder._target_}_${now:%m-%d-%H-%M}
     version: ""
   callbacks:
     - _target_: lightning.pytorch.callbacks.EarlyStopping
