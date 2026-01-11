@@ -1,4 +1,5 @@
 import lightning
+import torch
 from torch import Tensor
 from torch.distributions import Normal
 from torch.utils.data import DataLoader, TensorDataset, random_split
@@ -26,11 +27,15 @@ class GaussianDataModule(lightning.LightningDataModule):
 
     def generate_dataset(self, num_samples):
         z = Normal(0.0, self.prior_stdev).sample([num_samples])
-        x = (
+        x_raw = (
             Normal(z, self.likelihood_stdev)
             .sample([self.num_observations])
             .permute(1, 0)
         )
+        # Compute sufficient statistics: sample mean and biased sample variance
+        sample_mean = x_raw.mean(dim=1, keepdim=True)
+        sample_var = x_raw.var(dim=1, unbiased=False, keepdim=True)
+        x = torch.cat([sample_mean, sample_var], dim=1)
         return TensorDataset(Tensor(z), Tensor(x))
 
     def setup(self, stage: str):

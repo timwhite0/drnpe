@@ -19,34 +19,9 @@ datamodule:
   train_split: 0.8
   val_split: 0.1
 
-# Standard NPE
-# encoder:
-#   _target_: encoder.EncoderNPE
-#   x_dim: ${datamodule.num_observations}
-#   num_hidden_channels: 64
-#   lr: 1e-4
-
-# DRNPE, primal
-# encoder:
-#   _target_: encoder.EncoderDRNPE
-#   objective: "drnpe primal"
-#   kl_ball_threshold: 0.0  # irrelevant if objective is "drnpe primal"
-#   initial_lambda: 0.1
-#   x_dim: ${datamodule.num_observations}
-#   z_noise_stdev: 0.1
-#   x_noise_stdev: 0.1
-#   num_hidden_channels: 64
-#   lr: 1e-4
-
-# DRNPE, dual
 encoder:
-  _target_: encoder.EncoderDRNPE
-  objective: "drnpe dual"
-  kl_ball_threshold: 0.654  # KL(N(0,2) || N(0,1)) where 2 is the misspecified likelihood variance
-  initial_lambda: 1.0
-  x_dim: ${datamodule.num_observations}
-  z_noise_stdev: 0.1
-  x_noise_stdev: 0.1
+  _target_: encoder.EncoderNPE
+  x_dim: 2
   num_hidden_channels: 64
   lr: 1e-4
 
