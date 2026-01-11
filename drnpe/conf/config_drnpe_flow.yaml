@@ -1,0 +1,61 @@
+defaults:
+  - _self_
+  - override hydra/job_logging: disabled
+
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+seed: 42
+
+datamodule:
+  _target_: data.GaussianDataModule
+  prior_stdev: 5.0
+  likelihood_stdev: 1.0
+  num_observations: 100
+  num_batches: 100
+  batch_size: 256
+  train_split: 0.8
+  val_split: 0.1
+
+encoder:
+  _target_: encoder.EncoderDRNPEFlow
+  objective: "drnpe dual"
+  kl_ball_threshold: 0.654  # KL(N(0,2) || N(0,1)) where 2 is the misspecified likelihood variance
+  initial_lambda: 1.0
+  z_dim: 1
+  x_dim: 2
+  z_noise_stdev: 0.1
+  x_noise_stdev: 0.1
+  num_hidden_channels: 50
+  lr: 1e-4
+  num_transforms: 8
+  num_bins: 8
+  num_blocks: 1
+  tail_bound: 25.0
+  init_checkpoint: null
+
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 1000
+  accelerator: gpu
+  devices: 1
+  logger:
+    _target_: lightning.pytorch.loggers.TensorBoardLogger
+    save_dir: logs
+    name: ${encoder._target_}_${now:%m-%d-%H-%M}
+    version: ""
+  callbacks:
+    - _target_: lightning.pytorch.callbacks.EarlyStopping
+      monitor: val_loss
+      patience: 50
+      mode: min
+      verbose: true
+    - _target_: lightning.pytorch.callbacks.ModelCheckpoint
+      monitor: val_loss
+      mode: min
+      save_top_k: 1
+      filename: "network_epoch{epoch}"
+      auto_insert_metric_name: false
+      verbose: true
