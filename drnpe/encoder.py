@@ -72,7 +72,7 @@ class EncoderDRNPE(EncoderNPE):
             torch.exp(torch.tensor(self.initial_lambda)) - 1.0
         )
         if objective == "drnpe primal":
-            self.lambda_softplus_inverse = lambda_softplus_inverse
+            self.register_buffer("lambda_softplus_inverse", lambda_softplus_inverse)
         elif objective == "drnpe dual":
             self.lambda_softplus_inverse = torch.nn.Parameter(lambda_softplus_inverse)
 
@@ -228,7 +228,7 @@ class EncoderDRNPEFlow(EncoderNPEFlow):
             torch.exp(torch.tensor(self.initial_lambda)) - 1.0
         )
         if objective == "drnpe primal":
-            self.lambda_softplus_inverse = lambda_softplus_inverse
+            self.register_buffer("lambda_softplus_inverse", lambda_softplus_inverse)
         elif objective == "drnpe dual":
             self.lambda_softplus_inverse = torch.nn.Parameter(lambda_softplus_inverse)
 
