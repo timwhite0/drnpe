@@ -10,7 +10,7 @@ hydra:
 seed: 42
 
 datamodule:
-  _target_: data.GaussianDataModule
+  _target_: data_gaussian.GaussianDataModule
   prior_stdev: 5.0
   likelihood_stdev: 1.0
   num_observations: 100

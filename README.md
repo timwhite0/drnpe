@@ -27,20 +27,20 @@ uv run pre-commit install
 
 ## Training
 
-Train encoders using Hydra configs in `drnpe/conf/`:
+Train encoders by pointing `--config-path` at an experiment's config directory:
 
 ```bash
-# NPE with Gaussian variational distribution
-uv run python drnpe/train.py -cn config_npe
+# Gaussian experiment
+uv run python drnpe/train.py --config-path=../experiments/gaussian/conf -cn config_npe
+uv run python drnpe/train.py --config-path=../experiments/gaussian/conf -cn config_drnpe
+uv run python drnpe/train.py --config-path=../experiments/gaussian/conf -cn config_npe_flow
+uv run python drnpe/train.py --config-path=../experiments/gaussian/conf -cn config_drnpe_flow
 
-# DRNPE with Gaussian variational distribution
-uv run python drnpe/train.py -cn config_drnpe
-
-# NPE with Neural Spline Flow
-uv run python drnpe/train.py -cn config_npe_flow
-
-# DRNPE with Neural Spline Flow
-uv run python drnpe/train.py -cn config_drnpe_flow
+# SIR experiment
+uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_sir_npe
+uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_sir_drnpe
+uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_sir_npe_flow
+uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_sir_drnpe_flow
 ```
 
 Monitor training with TensorBoard:
@@ -48,22 +48,31 @@ Monitor training with TensorBoard:
 uv run tensorboard --logdir=logs
 ```
 
-## Example
+## Experiments
 
-See `examples/gaussian.ipynb` for a demonstration on a Gaussian inference problem, comparing coverage probabilities under model misspecification.
+- `experiments/gaussian/` — Gaussian inference benchmark with analytic posterior
+- `experiments/sir/` — Stochastic SIR epidemic model (Ward et al., 2022)
+
+Each experiment folder contains its own data module, Hydra configs, and evaluation notebook.
 
 ## Project Structure
 
 ```
 drnpe/
 ├── drnpe/
-│   ├── conf/           # Hydra configuration files
-│   ├── data.py         # Data modules
+│   ├── data.py         # Base data module class
 │   ├── encoder.py      # NPE and DRNPE encoder classes
 │   ├── networks.py     # Neural network architectures
 │   └── train.py        # Training script
-├── examples/
-│   └── gaussian.ipynb  # Example notebook
+├── experiments/
+│   ├── gaussian/
+│   │   ├── conf/       # Hydra configs
+│   │   ├── data_gaussian.py  # GaussianDataModule
+│   │   └── gaussian.ipynb
+│   └── sir/
+│       ├── conf/             # Hydra configs
+│       ├── data_sir.py       # SIRDataModule
+│       └── sir.ipynb
 ├── trained_ckpts/      # Pre-trained model checkpoints
 └── logs/               # Training logs and checkpoints
 ```

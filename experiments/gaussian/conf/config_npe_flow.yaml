@@ -10,7 +10,7 @@ hydra:
 seed: 42
 
 datamodule:
-  _target_: data.GaussianDataModule
+  _target_: data_gaussian.GaussianDataModule
   prior_stdev: 5.0
   likelihood_stdev: 1.0
   num_observations: 100
@@ -20,15 +20,15 @@ datamodule:
   val_split: 0.1
 
 encoder:
-  _target_: encoder.EncoderDRNPE
-  objective: "drnpe dual"
-  kl_ball_threshold: 0.654  # KL(N(0,2) || N(0,1)) where 2 is the misspecified likelihood variance
-  initial_lambda: 1.0
+  _target_: encoder.EncoderNPEFlow
+  z_dim: 1
   x_dim: 2
-  z_noise_stdev: 0.1
-  x_noise_stdev: 0.1
-  num_hidden_channels: 64
+  num_hidden_channels: 50
   lr: 1e-4
+  num_transforms: 8
+  num_bins: 8
+  num_blocks: 1
+  tail_bound: 25.0
 
 trainer:
   _target_: lightning.Trainer

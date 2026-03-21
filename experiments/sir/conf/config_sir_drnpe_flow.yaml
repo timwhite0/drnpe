@@ -1,0 +1,69 @@
+defaults:
+  - _self_
+  - override hydra/job_logging: disabled
+
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+seed: 42
+
+datamodule:
+  _target_: data_sir.SIRDataModule
+  population_size: 100000
+  num_days: 365
+  eta: 0.05
+  sigma: 0.05
+  dt: 0.1
+  beta_min: 0.0
+  beta_max: 0.5
+  gamma_min: 0.0
+  gamma_max: 0.5
+  reject_gamma_gt_beta: true
+  num_batches: 200
+  batch_size: 256
+  train_split: 0.8
+  val_split: 0.1
+  simulator_device: cuda
+
+encoder:
+  _target_: encoder.EncoderDRNPEFlow
+  objective: "drnpe dual"
+  kl_ball_threshold: 1.0
+  initial_lambda: 1.0
+  z_dim: 2
+  x_dim: 6
+  z_noise_stdev: 0.1
+  x_noise_stdev: 0.1
+  num_hidden_channels: 50
+  lr: 1e-4
+  num_transforms: 8
+  num_bins: 8
+  num_blocks: 1
+  tail_bound: 25.0
+  init_checkpoint: null
+
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 1000
+  accelerator: gpu
+  devices: 1
+  logger:
+    _target_: lightning.pytorch.loggers.TensorBoardLogger
+    save_dir: logs
+    name: sir_${encoder._target_}_${now:%m-%d-%H-%M}
+    version: ""
+  callbacks:
+    - _target_: lightning.pytorch.callbacks.EarlyStopping
+      monitor: val_loss
+      patience: 50
+      mode: min
+      verbose: true
+    - _target_: lightning.pytorch.callbacks.ModelCheckpoint
+      monitor: val_loss
+      mode: min
+      save_top_k: 1
+      filename: "network_epoch{epoch}"
+      auto_insert_metric_name: false
+      verbose: true
