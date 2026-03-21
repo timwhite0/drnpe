@@ -8,8 +8,10 @@ class LocationScaleNet(nn.Module):
         self,
         x_dim: int,
         num_hidden_channels: int,
+        z_dim: int = 1,
     ):
         super().__init__()
+        self.z_dim = z_dim
 
         self.net = nn.Sequential(
             nn.Linear(x_dim, num_hidden_channels),
@@ -18,13 +20,16 @@ class LocationScaleNet(nn.Module):
             nn.SiLU(),
             nn.Linear(num_hidden_channels, num_hidden_channels),
             nn.SiLU(),
-            nn.Linear(num_hidden_channels, 2),
+            nn.Linear(num_hidden_channels, 2 * z_dim),
         )
 
     def forward(self, x):
         params = self.net(x)
-        mean = params[:, 0]
-        log_std = params[:, 1].clamp(-8.0, 8.0)
+        mean = params[:, : self.z_dim]
+        log_std = params[:, self.z_dim :].clamp(-10.0, 10.0)
+        if self.z_dim == 1:
+            mean = mean.squeeze(-1)
+            log_std = log_std.squeeze(-1)
         return mean, log_std
 
 

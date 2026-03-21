@@ -3,17 +3,20 @@ import torch
 import torch.nn.functional as F
 from networks import ConditionalSplineFlow, LocationScaleNet
 from torch import optim
-from torch.distributions import Normal
+from torch.distributions import Independent, Normal
 
 
 class EncoderNPE(lightning.LightningModule):
-    def __init__(self, x_dim: int, num_hidden_channels: int, lr: float):
+    def __init__(self, x_dim: int, num_hidden_channels: int, lr: float, z_dim: int = 1):
         super().__init__()
         self.x_dim = x_dim
+        self.z_dim = z_dim
         self.num_hidden_channels = num_hidden_channels
         self.lr = lr
         self.net = LocationScaleNet(
-            x_dim=self.x_dim, num_hidden_channels=self.num_hidden_channels
+            x_dim=self.x_dim,
+            num_hidden_channels=self.num_hidden_channels,
+            z_dim=self.z_dim,
         )
 
     def compute_loss(self, batch, batch_idx, mode):
@@ -22,7 +25,10 @@ class EncoderNPE(lightning.LightningModule):
         mu, log_sigma = self.net(x)
         sigma = torch.exp(log_sigma)
 
-        logq = Normal(mu, sigma).log_prob(z)
+        if self.z_dim == 1:
+            logq = Normal(mu, sigma).log_prob(z)
+        else:
+            logq = Independent(Normal(mu, sigma), 1).log_prob(z)
 
         loss = -logq.mean()
 
@@ -61,8 +67,14 @@ class EncoderDRNPE(EncoderNPE):
         num_hidden_channels: int,
         lr: float,
         objective: str = "drnpe primal",
+        z_dim: int = 1,
     ):
-        super().__init__(x_dim=x_dim, num_hidden_channels=num_hidden_channels, lr=lr)
+        super().__init__(
+            x_dim=x_dim,
+            num_hidden_channels=num_hidden_channels,
+            lr=lr,
+            z_dim=z_dim,
+        )
         self.objective = objective
         self.kl_ball_threshold = kl_ball_threshold
         self.initial_lambda = initial_lambda
@@ -85,7 +97,10 @@ class EncoderDRNPE(EncoderNPE):
         mu, log_sigma = self.net(x)
         sigma = torch.exp(log_sigma)
 
-        logq = Normal(mu, sigma).log_prob(z)
+        if self.z_dim == 1:
+            logq = Normal(mu, sigma).log_prob(z)
+        else:
+            logq = Independent(Normal(mu, sigma), 1).log_prob(z)
 
         lam = F.softplus(self.lambda_softplus_inverse) + 1e-8
         logw = -(1.0 / lam) * logq
