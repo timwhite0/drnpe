@@ -3,3 +3,6 @@ outputs
 logs
 **/__pycache__
 *.out
+*.md
+*.txt
+*.pdf
