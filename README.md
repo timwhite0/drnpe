@@ -41,6 +41,12 @@ uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_si
 uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_sir_drnpe
 uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_sir_npe_flow
 uv run python drnpe/train.py --config-path=../experiments/sir/conf -cn config_sir_drnpe_flow
+
+# Cancer & Stromal experiment
+uv run python drnpe/train.py --config-path=../experiments/cs/conf -cn config_cs_npe
+uv run python drnpe/train.py --config-path=../experiments/cs/conf -cn config_cs_drnpe
+uv run python drnpe/train.py --config-path=../experiments/cs/conf -cn config_cs_npe_flow
+uv run python drnpe/train.py --config-path=../experiments/cs/conf -cn config_cs_drnpe_flow
 ```
 
 Monitor training with TensorBoard:
@@ -52,6 +58,7 @@ uv run tensorboard --logdir=logs
 
 - `experiments/gaussian/` — Gaussian inference benchmark with analytic posterior
 - `experiments/sir/` — Stochastic SIR epidemic model (Ward et al., 2022)
+- `experiments/cs/` — Cancer & Stromal point process model (Ward et al., 2022)
 
 Each experiment folder contains its own data module, Hydra configs, and evaluation notebook.
 
@@ -69,10 +76,14 @@ drnpe/
 │   │   ├── conf/       # Hydra configs
 │   │   ├── data_gaussian.py  # GaussianDataModule
 │   │   └── gaussian.ipynb
-│   └── sir/
+│   ├── sir/
+│   │   ├── conf/             # Hydra configs
+│   │   ├── data_sir.py       # SIRDataModule
+│   │   └── sir.ipynb
+│   └── cs/
 │       ├── conf/             # Hydra configs
-│       ├── data_sir.py       # SIRDataModule
-│       └── sir.ipynb
+│       ├── data_cs.py        # CSDataModule
+│       └── cs.ipynb
 ├── trained_ckpts/      # Pre-trained model checkpoints
 └── logs/               # Training logs and checkpoints
 ```
