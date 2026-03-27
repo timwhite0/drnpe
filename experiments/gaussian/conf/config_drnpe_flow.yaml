@@ -11,7 +11,7 @@ seed: 42
 
 datamodule:
   _target_: data_gaussian.GaussianDataModule
-  prior_stdev: 5.0
+  prior_stdev: 2.5
   likelihood_stdev: 1.0
   num_observations: 100
   num_batches: 100
@@ -33,7 +33,7 @@ encoder:
   num_transforms: 8
   num_bins: 8
   num_blocks: 1
-  tail_bound: 25.0
+  tail_bound: 10.0
   init_checkpoint: null
 
 trainer:
@@ -44,7 +44,7 @@ trainer:
   logger:
     _target_: lightning.pytorch.loggers.TensorBoardLogger
     save_dir: logs
-    name: ${encoder._target_}_${now:%m-%d-%H-%M}
+    name: drnpe_flow
     version: ""
   callbacks:
     - _target_: lightning.pytorch.callbacks.EarlyStopping
